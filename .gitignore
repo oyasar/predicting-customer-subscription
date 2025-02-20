@@ -1,0 +1,8 @@
+analysis/*.ipynb
+data/
+__pycache__/
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+.idea/

@@ -26,7 +26,7 @@ setup(
         "lightgbm==4.6.0",
         "catboost==1.2.7",
         "jupyter==1.1.1",
-        "notebook==6.5.5",
+        "notebook==7.3.2",
         "openpyxl==3.1.5"
     ],
 )

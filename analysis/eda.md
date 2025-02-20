@@ -1,7 +1,35 @@
+---
+title: "Exploratory Data Analysis"
+author: "Ozge Yasar"
+date: "2025-02-20"
+format:
+  html:
+    self-contained: true
+    toc: true            # Enable Table of Contents
+    toc-depth: 3         # Set TOC depth (adjust as needed)
+    number-sections: true # Automatically number sections
+    code-fold: true      # Allow folding (collapsing) of code blocks
+    code-tools: true     # Enable code tools (like copy buttons)
+execute:
+  echo: true              # Show code by default
+  warning: false          # Hide warnings (optional)
+  error: false            # Hide errors (optional)
+jupyter: python3          # Specify the Jupyter kernel
+---
+
 ```python
-import pandas as pd
-import plotly.express as px
+from predicting_customer_subscription.eda_utils import *
+import plotly.io as pio
+pio.renderers.default = "png"
 ```
+
+## 1. Dataset
+
+Based on the results below, here's the summary of the dataset:
+* The dataset is consist of 15 columns. 4 of these include numerical values, 10 of them are categorical variables, and the colum 'y' is the binary outcome variable.
+* The columns don't have any missing values
+* The positive output ratio is around 1 to 9 (11% to 89%) which indicates an imbalance (but not too bad for now).
+
 
 
 ```python
@@ -10,299 +38,58 @@ df = pd.read_excel('../data/train_file.xlsx')
 
 
 ```python
-df.head()
+data_summary(df, outcome_col= 'y', head_rows=5)
 ```
 
+## 2. Correlations
 
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>age</th>
-      <th>job</th>
-      <th>marital</th>
-      <th>education</th>
-      <th>default</th>
-      <th>housing</th>
-      <th>loan</th>
-      <th>contact</th>
-      <th>month</th>
-      <th>day_of_week</th>
-      <th>duration</th>
-      <th>campaign</th>
-      <th>previous</th>
-      <th>poutcome</th>
-      <th>y</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>49</td>
-      <td>blue-collar</td>
-      <td>married</td>
-      <td>basic.9y</td>
-      <td>unknown</td>
-      <td>no</td>
-      <td>no</td>
-      <td>cellular</td>
-      <td>nov</td>
-      <td>wed</td>
-      <td>227</td>
-      <td>4</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>37</td>
-      <td>entrepreneur</td>
-      <td>married</td>
-      <td>university.degree</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>nov</td>
-      <td>wed</td>
-      <td>202</td>
-      <td>2</td>
-      <td>1</td>
-      <td>failure</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>78</td>
-      <td>retired</td>
-      <td>married</td>
-      <td>basic.4y</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>cellular</td>
-      <td>jul</td>
-      <td>mon</td>
-      <td>1148</td>
-      <td>1</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>yes</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>36</td>
-      <td>admin.</td>
-      <td>married</td>
-      <td>university.degree</td>
-      <td>no</td>
-      <td>yes</td>
-      <td>no</td>
-      <td>telephone</td>
-      <td>may</td>
-      <td>mon</td>
-      <td>120</td>
-      <td>2</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>no</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>59</td>
-      <td>retired</td>
-      <td>divorced</td>
-      <td>university.degree</td>
-      <td>no</td>
-      <td>no</td>
-      <td>no</td>
-      <td>cellular</td>
-      <td>jun</td>
-      <td>tue</td>
-      <td>368</td>
-      <td>2</td>
-      <td>0</td>
-      <td>nonexistent</td>
-      <td>no</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
+Correlations among the continous variables are quite weak as can be seen from the matrix below.
 
 
 ```python
-df.shape
+plot_correlation_matrix(df, num_columns=['age', 'duration', 'campaign', 'previous'], method= 'pearson')
 ```
 
 
+```python
+l_num_cols=['age', 'duration', 'campaign', 'previous']
+l_cat_cols=['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'month', 'day_of_week', 'poutcome']
+```
 
+## 3. Distributions - Continous Variables
 
-    (32910, 15)
-
-
+* Skewed distributions for all variables with outliers especially for duration variable (average is 258)
+* Relationships of the continous variables with the outcome shows some interesting insights.
+* Based on the histograms below, the marketing of the product seems to be more successful among the middle age group (30-40), however, it doesn't indicate a direct relationship given the number of customers contacted within this age group
+* Duration (call duration) seems to have a slightly positive relationship with the outcome.
+* Campaing (number of contact) distrtibution indicates that the higher number of contacts are not likely to be successful for the marketing of the product
+*  similar to this finding - there were more successful contacts in the not-previously-contacted bucket.
 
 
 ```python
-df.columns
+plot_distributions(df, cols=l_num_cols, outcome='y')
+```
+
+## 4. Distributions - Categorical Variables
+
+Majority of the target customers
+* are blue-collar worker,s admins, and technicians (this group also include the highest number of success).
+* are married
+* have a university degree (majority success)
+* doesn't have a credit in default (majority success which seems sensible)
+* has a housing loan (although not a significant difference with the no-housing loan group). Given the success of the product marketing, having a house loan doesn't seem to have a big impact.
+* doesn't have a personal loan. Personal loans seem to have sone impact.
+And most (last) contacts were made in May.
+Previous outcome column indicates that most of the customers doesn't have a previous outcome history which may indicate that they are the first time contact - or this information cannot be gathered. Again, there's higher success in this group.
+
+
+```python
+plot_distributions(df, cols=l_cat_cols, outcome='y')
 ```
 
 
-
-
-    Index(['age', 'job', 'marital', 'education', 'default', 'housing', 'loan',
-           'contact', 'month', 'day_of_week', 'duration', 'campaign', 'previous',
-           'poutcome', 'y'],
-          dtype='object')
-
-
-
-
 ```python
-df.y.value_counts()
-```
 
-
-
-
-    y
-    no     29203
-    yes     3707
-    Name: count, dtype: int64
-
-
-
-
-```python
-3707/29203
-```
-
-
-
-
-    0.12693901311509093
-
-
-
-
-```python
-df.isnull().sum()
-```
-
-
-
-
-    age            0
-    job            0
-    marital        0
-    education      0
-    default        0
-    housing        0
-    loan           0
-    contact        0
-    month          0
-    day_of_week    0
-    duration       0
-    campaign       0
-    previous       0
-    poutcome       0
-    y              0
-    dtype: int64
-
-
-
-
-```python
-df.dtypes
-```
-
-
-
-
-    age             int64
-    job            object
-    marital        object
-    education      object
-    default        object
-    housing        object
-    loan           object
-    contact        object
-    month          object
-    day_of_week    object
-    duration        int64
-    campaign        int64
-    previous        int64
-    poutcome       object
-    y              object
-    dtype: object
-
-
-
-
-```python
-df.job.unique()
-```
-
-
-
-
-    array(['blue-collar', 'entrepreneur', 'retired', 'admin.', 'student',
-           'services', 'technician', 'self-employed', 'management',
-           'unemployed', 'unknown', 'housemaid'], dtype=object)
-
-
-
-
-```python
-df.default.unique()
-```
-
-
-
-
-    array(['unknown', 'no', 'yes'], dtype=object)
-
-
-
-
-```python
-df.duration.max(), df.duration.min()
-```
-
-
-
-
-    (4918, 0)
-
-
-
-
-```python
-# TODO:
-# requirements versions
-# convert outcomes to 0,1, NA
-# relationships between categorical variables and the outcome
-# relationships between continous variables and the outcome
-# bin age and others
-# push to github
 ```
 
 

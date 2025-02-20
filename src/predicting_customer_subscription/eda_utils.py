@@ -5,12 +5,15 @@ from predicting_customer_subscription.utils import logger
 log = logger()
 
 
-def data_summary(df: pd.DataFrame, head_rows: 5):
+def data_summary(df,
+                 outcome_col,
+                 head_rows= 5):
     """
     Print basic summary information of the DataFrame.
 
     Args:
         df: DataFrame to summarize.
+        outcome_col (str): Name of the outcome column
         head_rows: Number of rows to display from head.
     """
     log.info("Data Shape: %s", df.shape)
@@ -20,9 +23,12 @@ def data_summary(df: pd.DataFrame, head_rows: 5):
     print(df.dtypes)
     print("\nMissing Values:")
     print(df.isnull().sum())
+    print("\nClass Ratio:")
+    print(df[outcome_col].value_counts(normalize=True).round(2))
+    print("\nColumn stats:")
+    print(df.describe())
 
-
-def plot_correlation_matrix(df: pd.DataFrame, num_columns, method: 'pearson'):
+def plot_correlation_matrix(df, num_columns, method= 'pearson'):
     """
     Plot the correlation matrix of numerical features using Plotly.
 
@@ -57,23 +63,22 @@ def plot_missing_values(df: pd.DataFrame):
                      labels={'index': 'Column', 'value': 'Count'})
         fig.show()
 
-def plot_distributions(df: pd.DataFrame, cols: list, col_type: str):
+def plot_distributions(df, cols, outcome=None):
     """
     Plot the distribution of numerical features using Plotly.
     Depending on the column type plot histograms or bar charts.
 
     Args:
         df: DataFrame containing the features.
+        cols: List of columns to plot.
+        outcome: outcome column name. if provided,
+        plot the distribution of the columns by the outcome.
+
     """
-    if col_type == 'numerical':
-        for col in cols:
-            fig = px.histogram(df, x=col, title=f"{col} Distribution")
+    for col in cols:
+        if col in df.columns:
+            fig = px.histogram(df, x=col, title=f"{col} Distribution",
+                               color=outcome)
             fig.show()
-    elif col_type == 'categorical':
-        for col in cols:
-            fig = px.bar(df[col].value_counts().reset_index(),
-                         x='index', y=col, title=f"{col} Distribution")
-            fig.show()
-    else:
-        log.error("Invalid column type."
-                  " Choose 'numerical' or 'categorical'.")
+        else:
+            log.error("Invalid column name.")

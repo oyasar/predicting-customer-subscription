@@ -20,13 +20,13 @@ setup(
         "flake8==7.1.2",
         "mypy==1.15.0",
         "sphinx==8.1.3",
-        "quarto==0.1.0",
         "plotly==6.0.0",
         "xgboost==2.1.4",
         "lightgbm==4.6.0",
         "catboost==1.2.7",
         "jupyter==1.1.1",
         "notebook==7.3.2",
-        "openpyxl==3.1.5"
+        "openpyxl==3.1.5",
+        "kaledio==0.2.1"
     ],
 )

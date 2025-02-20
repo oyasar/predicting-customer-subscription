@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="predicting-customer-subscription",
+    name="predicting_customer_subscription",
     version="0.1.0",
     description="A package for predicting customer subscription",
     package_dir={'': 'src'},

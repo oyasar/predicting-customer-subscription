@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.express as px
-from utils import logger
+from predicting_customer_subscription.utils import logger
 
 log = logger()
 

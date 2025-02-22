@@ -49,16 +49,6 @@ class Model:
 
         return self.model
 
-    def save(self, path="model.pkl"):
-        log.info(f"Saving model to {path}")
-        with open(path, "wb") as f:
-            pickle.dump(self.model, f)
-
-    def load(self, path="model.pkl"):
-        log.info(f"Loading model from {path}")
-        with open(path, "rb") as f:
-            self.model = pickle.load(f)
-
     def predict(self, X):
         return self.model.predict(X)
 
@@ -118,6 +108,11 @@ class Model:
         }).sort_values(by='Importance', ascending=False).reset_index(drop=True)
 
         return importance_df
+
+    def save(self, path="model.pkl"):
+        log.info(f"Saving model to {path}")
+        with open(path, "wb") as f:
+            pickle.dump((self.model,  self.feature_names), f)
 
 
 

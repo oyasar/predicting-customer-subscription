@@ -7,3 +7,4 @@ venv/
 .ipynb_checkpoints/
 .idea/
 catboost_info/
+models/*.pkl

@@ -27,6 +27,7 @@ setup(
         "jupyter==1.1.1",
         "notebook==7.3.2",
         "openpyxl==3.1.5",
-        "kaledio==0.2.1"
+        "kaledio==0.2.1",
+        "shap==0.46.0"
     ],
 )

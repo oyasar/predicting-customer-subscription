@@ -21,7 +21,7 @@ class Preprocess:
     def split_data(self, encode=True):
         # Split the data
         X = self.data.drop(self.target, axis=1)
-        y = self.data[self.target]
+        y = self.data[self.target].map({'yes': 1, 'no': 0})
 
         # Encode the data if required
         if encode:

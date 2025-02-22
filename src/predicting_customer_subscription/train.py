@@ -6,20 +6,22 @@ from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKF
 from sklearn.metrics import confusion_matrix, precision_recall_curve, roc_curve, auc, average_precision_score
 import matplotlib.pyplot as plt
 from predicting_customer_subscription.utils import logger
+import pandas as pd
 
 log = logger()
 
 class Model:
     def __init__(self, model_type='xgboost', n_splits=5):
         if model_type == 'xgboost':
-            self.model = xgb.XGBClassifier(objective="binary:logistic")
+            self.model = xgb.XGBClassifier(objective="binary:logistic",
+                                           seed=42, eval_metric='logloss', n_jobs=-1)
             self.param_grid = {
                 'n_estimators': [50, 100, 200],
                 'learning_rate': [0.01, 0.1, 0.2],
                 'max_depth': [3, 4, 5]
             }
         elif model_type == 'catboost':
-            self.model = cb.CatBoostClassifier(verbose=0)
+            self.model = cb.CatBoostClassifier(verbose=1, loss_function='Logloss', thread_count=-1)
             self.param_grid = {
                 'iterations': [100, 200, 300],
                 'learning_rate': [0.01, 0.1, 0.2],
@@ -30,16 +32,21 @@ class Model:
         self.model_type = model_type
         self.n_splits = n_splits
 
-    def train(self, X, y):
+    def train(self, X, y, cat_features=None):
+        #keep feature names for feature importance
+        self.feature_names = X.columns
+
         skf = StratifiedKFold(n_splits=self.n_splits, shuffle=True, random_state=42)
-        grid_search = GridSearchCV(estimator=self.model, param_grid=self.param_grid, cv=skf, scoring='roc_auc',
-                                   verbose=1)
-        grid_search.fit(X, y)
+        grid_search = GridSearchCV(estimator=self.model, param_grid=self.param_grid,
+                                   cv=skf, scoring='neg_log_loss',
+                                   verbose=1, refit=True)
+        if self.model_type == 'catboost' and cat_features is not None:
+            grid_search.fit(X, y, cat_features=cat_features)
+        else:
+            grid_search.fit(X, y)
         self.model = grid_search.best_estimator_
         print(f"Best parameters found: {grid_search.best_params_}")
 
-        # Retrain the best model on the whole training set
-        self.model.fit(X, y)
         return self.model
 
     def save(self, path="model.pkl"):
@@ -64,8 +71,10 @@ class Model:
 
         # Confusion Matrix
         cm = confusion_matrix(y_test, y_pred)
+        cm_df = pd.DataFrame(cm, index=['Actual Negative', 'Actual Positive'],
+                             columns=['Predicted Negative', 'Predicted Positive'])
         print("Confusion Matrix:")
-        print(cm)
+        print(cm_df)
 
         # Precision-Recall Curve
         precision, recall, _ = precision_recall_curve(y_test, y_proba)
@@ -93,8 +102,23 @@ class Model:
         plt.legend(loc="best")
         plt.show()
 
-    def get_best_model(self):
-        return self.model
+    def feature_importance(self):
+
+        if self.model_type == 'xgboost':
+            gain_importance = self.model.get_booster().get_score(importance_type='gain')
+            importance = [gain_importance.get(f, 0) for f in self.feature_names]
+        elif self.model_type == 'catboost':
+            importance = self.model.get_feature_importance()
+        else:
+            raise ValueError("Unsupported model type. Choose 'xgboost' or 'catboost'.")
+
+        importance_df = pd.DataFrame({
+            'Feature': self.feature_names,
+            'Importance': importance
+        }).sort_values(by='Importance', ascending=False).reset_index(drop=True)
+
+        return importance_df
+
 
 
 # if __name__ == "__main__":

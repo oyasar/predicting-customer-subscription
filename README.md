@@ -1,6 +1,7 @@
 # Predicting Customer Subscription
 
-This is the python package of the project. It’s developed using **Python version 3.10**. The project structure is mainly created with a cookie cutter template.
+This is the python package of the project. It’s developed using **Python version 3.10**. 
+The project structure is mainly created with a cookie cutter template.
 
 ## Installation:
 
@@ -36,11 +37,11 @@ Git ignores the files in this folder. Please add the train and test excel files 
 
 ### Models:
 
-Were the serialised models stored in pickle format. These are not pushed to the remote repository due to the size of the files. 
+Serialised models stored in pickle format. These are not pushed to the remote repository due to the size of the files. 
 
 ### Output:
 
-The results of the scoring is saved in csv format
+The results of the scoring is saved in csv format.
 
 ### Project root - src/predicting_customer_subscription
 
@@ -68,3 +69,8 @@ To run the image and save the output to the project folder:
 ```sh
 docker run --name pcs -p 8000:8000 -v local_project_path/predicting-customer-subscription/output:/app/output -it predicting_customer_subscription
 ```
+
+## Limitations and Possible Improvements:
+* There are some hard-coding involved such as file paths and model hyperparameters. These can be moved to a config file and added as a parameter to the functions.
+* For the modelling, I've used a few hyperparameters for tuning. Further tuning can be done.
+* I've not set a prediction threshold for the predictions. This can be set based on the factors such as objective (Cost of low precision) and capacity of the customer service agents (number of calls that can be done), etc.

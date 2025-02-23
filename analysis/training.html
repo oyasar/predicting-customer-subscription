@@ -3096,6 +3096,7 @@ vertical-align: -.125em;
   <ul>
   <li><a href="#xgboost-model-training" id="toc-xgboost-model-training" class="nav-link active" data-scroll-target="#xgboost-model-training"><span class="header-section-number">1</span> 1. XGBoost Model Training</a></li>
   <li><a href="#catboost-model-training" id="toc-catboost-model-training" class="nav-link" data-scroll-target="#catboost-model-training"><span class="header-section-number">2</span> 2. CatBoost Model Training</a></li>
+  <li><a href="#evaluation-of-the-models" id="toc-evaluation-of-the-models" class="nav-link" data-scroll-target="#evaluation-of-the-models"><span class="header-section-number">3</span> 3. Evaluation of the models</a></li>
   </ul>
 </nav>
 </div>
@@ -3132,7 +3133,7 @@ vertical-align: -.125em;
 </header>
 
 
-<div id="839b21aa73d3196b" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T17:58:04.808953Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T17:58:02.631558Z&quot;}" data-execution_count="17">
+<div id="839b21aa73d3196b" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-23T15:52:33.041054Z&quot;,&quot;start_time&quot;:&quot;2025-02-23T15:52:22.435489Z&quot;}" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
@@ -3144,14 +3145,18 @@ vertical-align: -.125em;
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> shap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="c70d3bb5876a7cb8" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T17:35:07.284954Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T17:35:00.629950Z&quot;}" data-execution_count="2">
+<div id="c70d3bb5876a7cb8" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-23T15:52:40.009771Z&quot;,&quot;start_time&quot;:&quot;2025-02-23T15:52:33.058917Z&quot;}" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>df<span class="op">=</span> pd.read_excel(<span class="st">&#39;../data/train_file.xlsx&#39;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>For the modelling task, I’ll be experimenting with 2 algorithms. XGBoost and CatBoost. I’ll train both models and compare their performance. Because catboost has a built-in categorical feature handling, I’ll use onehot encoder for XGBoost model training only. Due to this reason, I’ll split the data into train and test sets seperatelty for each experiment.</p>
+<ul>
+<li>For the modelling task, I’ll be experimenting with 2 algorithms. XGBoost and CatBoost. I’ll train both models and compare their performance. Because Catboost has a built-in categorical feature handling, I’ll use one hot encoder for XGBoost model training only. Due to this reason, I’ll split the data into train and test sets separately for each experiment.</li>
+<li>I first preprocess the data by encoding the categorical features and splitting the data into train and test sets as can be seen in preprocessing.py module.</li>
+<li>As can be seen in train.py module, Model method is used to train the models. It takes the model type as an argument and trains the model with 5-fold cross validation and hyperparameter tuning. It also evaluates the model on the test set and generates the evaluation metrics such as PRCurve, Feature importance, etc. I’ve also looked at the shap feature importance scores for both models.</li>
+</ul>
 <section id="xgboost-model-training" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> 1. XGBoost Model Training</h1>
 <div id="77a08bfe637074ed" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T17:35:07.743592Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T17:35:07.735609Z&quot;}" data-execution_count="3">
@@ -3164,13 +3169,14 @@ vertical-align: -.125em;
 <div id="9ecd4b8c43290f3d" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T17:35:07.879747Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T17:35:07.752398Z&quot;}" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X_train_x, X_test_x, y_train_x, y_test_x <span class="op">=</span> pp.split_data(encode<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># encoding is applied for xgboost model training</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X_train_x, X_test_x, y_train_x, y_test_x <span class="op">=</span> pp.split_data(encode<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div id="4b247d729edde8f2" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T17:35:55.955282Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T17:35:07.925591Z&quot;}">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Train and evaluate XGBoost model</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Train and evaluate XGBoost model - 5 fold cross validation</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>xgb_model <span class="op">=</span> Model(model_type<span class="op">=</span><span class="st">&#39;xgboost&#39;</span>, n_splits<span class="op">=</span><span class="dv">5</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>xgb_model.train(X_train_x, y_train_x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -3209,9 +3215,9 @@ PR AUC: 0.6004746381733065</code></pre>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># feature importance</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>xgb_importance <span class="op">=</span> xgb_model.feature_importance().sort_values(by<span class="op">=</span><span class="st">&#39;Importance&#39;</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>fig_x <span class="op">=</span> px.bar(xgb_importance.head(<span class="dv">15</span>).sort_values(by<span class="op">=</span><span class="st">&#39;Importance&#39;</span>, ascending<span class="op">=</span><span class="va">True</span>), y<span class="op">=</span><span class="st">&#39;Feature&#39;</span>, x<span class="op">=</span><span class="st">&#39;Importance&#39;</span>, title<span class="op">=</span><span class="st">&#39;Feature Importance&#39;</span>, orientation<span class="op">=</span><span class="st">&#39;h&#39;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>xgb_importance <span class="op">=</span> xgb_model.feature_importance().sort_values(by<span class="op">=</span><span class="st">&#39;Importance&#39;</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fig_x <span class="op">=</span> px.bar(xgb_importance.head(<span class="dv">15</span>).sort_values(by<span class="op">=</span><span class="st">&#39;Importance&#39;</span>, ascending<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>               y<span class="op">=</span><span class="st">&#39;Feature&#39;</span>, x<span class="op">=</span><span class="st">&#39;Importance&#39;</span>, title<span class="op">=</span><span class="st">&#39;Feature Importance&#39;</span>, orientation<span class="op">=</span><span class="st">&#39;h&#39;</span>)</span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>fig_x.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
@@ -3252,7 +3258,7 @@ PR AUC: 0.6004746381733065</code></pre>
 </section>
 <section id="catboost-model-training" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> 2. CatBoost Model Training</h1>
-<div id="f5039aa1acb2eeef" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T17:35:59.206315Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T17:35:59.166840Z&quot;}" data-execution_count="8">
+<div id="f5039aa1acb2eeef" class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>X_train_c, X_test_c, y_train_c, y_test_c <span class="op">=</span> pp.split_data(encode<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -3262,7 +3268,7 @@ PR AUC: 0.6004746381733065</code></pre>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Train and evaluate CatBoost model</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>cb_model <span class="op">=</span> Model(model_type<span class="op">=</span><span class="st">&#39;catboost&#39;</span>, n_splits<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>cb_model <span class="op">=</span> Model(model_type<span class="op">=</span><span class="st">&#39;catboost&#39;</span>, n_splits<span class="op">=</span><span class="dv">5</span>, cat_features<span class="op">=</span>cat_cols)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>cat_var <span class="op">=</span> X_train_c.select_dtypes(include<span class="op">=</span>[<span class="st">&#39;object&#39;</span>]).columns.tolist()</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>cb_model.train(X_train_c, y_train_c, cat_features<span class="op">=</span>cat_var)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -3338,13 +3344,19 @@ PR AUC: 0.6127144979475927</code></pre>
 </div>
 </div>
 </div>
-<div id="1b3140d23fdeb8a9" class="cell" data-executetime="{&quot;end_time&quot;:&quot;2025-02-22T18:24:25.665950Z&quot;,&quot;start_time&quot;:&quot;2025-02-22T18:24:25.647648Z&quot;}" data-execution_count="35">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the model</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>xgb_model.save(<span class="st">&#39;../models/xgb_model.pkl&#39;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
+</section>
+<section id="evaluation-of-the-models" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> 3. Evaluation of the models</h1>
+<ul>
+<li>In order to evaluate the models I’ve generated both ROC curves and Precision Recall curves (with auc scores). However, Because the dataset is imbalanced, I’ve used the Precision Recall curve as the main evaluation metric.</li>
+<li>As can be seen in the plots above, they perform similarly in terms of Precision Recall curves. CatBoost model has a slightly better performance in terms of precision and recall scores (0.1 increase in PR auc).</li>
+<li>There’s a spike in the precision recall curve of XGB model indicating lower number of cases predicted as positive at high thresholds. This might be due to the fact that the dataset is imbalanced. Other than that the shape of the PR curves are very similar.</li>
+<li>In terms of the feature importance, both models have similar top features. However, the top important features are slightly different. For example, the top feature for XGBoost model is ‘potucome_success’ whereas it is ‘duration’ for CatBoost model. Given the EDA, I think both make sense and not unexpected. However, in the current method, catboost doesn’t reveal which value of the categorical features are important for the prediction. This is a limitation of my implementation currently.</li>
+<li>For the shap scores, the top features contributing to the model is the same (duration). However, the remaining seems to be different. Catboost model seems to be relying most on the continuous columns rather than the categorical ones.</li>
+<li>On the other hand, XGB shap scores are more balanced between the categorical and continuous features. This might be due to the one hot encoding of the categorical features.</li>
+<li>Training complexity and time is higher for CatBoost model compared to XGBoost model.</li>
+<li>In conclusion, I’ve chosen to use XGBoost model for the prediction task due to the performance being as high as Catboost model on the holdout set, better explainability and reduced complexity even though it still has some pre-processing complexity with data encoding.</li>
+</ul>
 </section>
 
 </main>

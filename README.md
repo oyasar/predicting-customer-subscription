@@ -1,7 +1,6 @@
 # Predicting Customer Subscription
 
-This is the python package of the project. It’s developed using **Python version 3.10**. 
-The project structure is mainly created with a cookie cutter template.
+The project is developed using **Python version 3.10**.
 
 ## Installation:
 

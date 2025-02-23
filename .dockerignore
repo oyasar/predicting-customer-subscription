@@ -1,1 +1,11 @@
-pycache *.pyc *.pyo *.pyd .Python env venv ENV .git .gitignore .DS_Store
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv/
+analysis/
+ENV
+.git
+.gitignore
+.DS_Store

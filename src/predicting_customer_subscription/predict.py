@@ -1,8 +1,11 @@
+import datetime
 import pickle
 import pandas as pd
 from flask import Flask, request, jsonify
 from sklearn.preprocessing import OneHotEncoder
+import datetime
 
+date = datetime.datetime.now().strftime('%Y-%m-%d')
 app = Flask(__name__)
 
 # Load the XGBoost model
@@ -10,6 +13,15 @@ with open('models/xgb_model.pkl', 'rb') as f:
     xgb_model, features = pickle.load(f)
 
 def encode(df):
+    """
+    One-hot encode the categorical columns and return the DataFrame.
+    Args:
+        df: dataset to be scored.
+
+    Returns:
+        DataFrame with one-hot encoded columns.
+
+    """
     # One-hot encoding of the categorical columns
     cat_cols = df.select_dtypes(include=['object']).columns
     enc = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
@@ -32,8 +44,6 @@ def match_cols(df_score, features):
         DataFrame with columns matched.
     """
 
-
-
     missing_cols = (set(features)- set(df_score.columns))
     for col in missing_cols:
         df_score[col] = 0
@@ -42,7 +52,6 @@ def match_cols(df_score, features):
     df_score = df_score[features]
 
     return df_score
-
 
 @app.route('/')
 def index():
@@ -75,8 +84,6 @@ def predict():
 
     df = encode(df)
 
-    df_train = pd.read_excel('data/train_file.xlsx')
-
     df = match_cols(df, features)
 
     # Make predictions
@@ -84,9 +91,11 @@ def predict():
 
     # Save predictions to CSV
     predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-    predictions_df.to_csv('output/predictions.csv', index=False)
 
-    return jsonify({'message': 'Predictions saved to output/predictions.csv'})
+    # for local implementation use 'output/predictions.csv',
+    predictions_df.to_csv(f'/app/output/predictions_{date}.csv', index=False)
+
+    return jsonify({'message': f'Predictions saved to output/predictions_{date}.csv'})
 
 if __name__ == '__main__':
     app.run(debug=True)

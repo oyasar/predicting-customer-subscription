@@ -2,6 +2,8 @@ import pandas as pd
 import plotly.express as px
 from predicting_customer_subscription.utils import logger
 
+# includes functions used in EDA
+
 log = logger()
 
 
